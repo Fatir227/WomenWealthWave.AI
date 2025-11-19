@@ -34,7 +34,7 @@ Equip every young woman with a judgment-free financial mentor so she can build g
 | --- | --- |
 | **Frontend SPA** | React 18, TypeScript, Vite, TailwindCSS, Radix UI, Lucide icons |
 | **Backend (Node)** | Express 5 + Vite middleware for API routes under `/api/*` |
-| **AI / Knowledge** | Optional FastAPI service, ChromaDB vector store, Sentence Transformers, Ollama with DeepSeek/LLaMA/Mistral models |
+| **AI / Knowledge** | Optional FastAPI service, ChromaDB vector store, Sentence Transformers, Ollama with DeepSeek/phi3:mini/openai-oss models |
 | **Tooling** | pnpm, Vitest, Zod, TanStack Query, clsx + tailwind-merge |
 
 > **Bold stance:** Everything runs on open-source intelligence. There are **zero external API keys**—models are pulled via [Ollama](https://ollama.ai/) and executed locally so users retain total control over their data.
@@ -198,8 +198,5 @@ pnpm format.fix # Prettier
 
 ## 👤 Creator
 
-Crafted with determination by **Fatir** to uplift women’s financial journeys.
-
----
-
+Crafted with determination by **Fatir and Team** to uplift women’s financial journeys.
 Start your financial literacy journey today, keep your data yours, and pass the knowledge forward. 💛
