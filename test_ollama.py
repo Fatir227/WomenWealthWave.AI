@@ -3,14 +3,14 @@ import json
 
 """Simple sanity check for the local Ollama setup.
 
-Uses the same small, fast model configured in the backend (phi3:mini).
+Uses the same lightweight multilingual model configured in the backend (qwen2.5:1.5b-instruct).
 Run with:  python test_ollama.py
 """
 
 # Test Ollama API
 url = "http://localhost:11434/api/chat"
 payload = {
-    "model": "phi3:mini",
+    "model": "qwen2.5:1.5b-instruct",
     "messages": [
         {"role": "user", "content": "What is financial literacy?"}
     ],

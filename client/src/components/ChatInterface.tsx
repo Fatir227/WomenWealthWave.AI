@@ -3,7 +3,6 @@ import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './ui/card';
-import { useToast } from './ui/use-toast';
 
 interface Message {
   id: string;
@@ -16,8 +15,15 @@ export function ChatInterface() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const resolvedBase =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+    (typeof window !== 'undefined' && window.location.origin.includes('localhost:5173')
+      ? 'http://localhost:8000'
+      : window.location.origin);
+  const apiBase = resolvedBase?.replace(/\/$/, '') || '';
+  const chatEndpoint = `${apiBase}/api/v1/chat`;
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -43,10 +49,11 @@ export function ChatInterface() {
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setError(null);
 
     try {
       // Call the backend API
-      const response = await fetch('http://localhost:8000/api/v1/chat', {
+      const response = await fetch(chatEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +65,15 @@ export function ChatInterface() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from the server');
+        const rawText = await response.text();
+        let detail = 'Failed to get response from the server';
+        try {
+          const parsed = JSON.parse(rawText);
+          detail = parsed.detail || detail;
+        } catch {
+          if (rawText) detail = rawText;
+        }
+        throw new Error(detail);
       }
 
       const data = await response.json();
@@ -74,11 +89,8 @@ export function ChatInterface() {
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to get response from the AI. Please try again.',
-        variant: 'destructive',
-      });
+      const message = error instanceof Error ? error.message : 'Failed to get response from the AI. Please try again.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -164,35 +176,35 @@ export function ChatInterface() {
           </div>
         ) : (
           <div className="space-y-4">
+            {error && (
+              <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            )}
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className="flex gap-2 max-w-[90%] sm:max-w-[80%]">
-                  {message.role === 'assistant' && (
-                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mt-1">
-                      <Bot className="h-4 w-4 text-purple-600" />
-                    </div>
-                  )}
-                  <div
-                    className={`rounded-2xl px-4 py-2 ${
-                      message.role === 'user'
-                        ? 'bg-purple-600 text-white rounded-br-none'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                    }`}
-                  >
-                    {message.content}
-                    <div className="text-xs opacity-70 mt-1">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
+              <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse text-right' : 'flex-row'}`}>
+                {message.role === 'assistant' && (
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mt-1">
+                    <Bot className="h-4 w-4 text-purple-600" />
                   </div>
-                  {message.role === 'user' && (
-                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mt-1">
-                      <User className="h-4 w-4 text-purple-600" />
-                    </div>
-                  )}
+                )}
+                <div
+                  className={`rounded-2xl px-4 py-2 ${
+                    message.role === 'user'
+                      ? 'bg-purple-600 text-white rounded-br-none'
+                      : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                  }`}
+                >
+                  {message.content}
+                  <div className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
+                {message.role === 'user' && (
+                  <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mt-1">
+                    <User className="h-4 w-4 text-purple-600" />
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (

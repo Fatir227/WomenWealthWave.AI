@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     
     # Ollama Settings
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    # Default to a lightweight Qwen model (~1 GB) to keep RAM usage low
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen2:0.5b")
+    # Default to a lightweight multilingual Qwen model
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b-instruct")
     
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")

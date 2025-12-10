@@ -35,6 +35,13 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{role: string, content: string}>>([]);
   const [showChatModal, setShowChatModal] = useState(false);
+  const resolvedBase =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ||
+    (typeof window !== 'undefined' && window.location.origin.includes('localhost:5173')
+      ? 'http://localhost:8000'
+      : window.location.origin);
+  const apiBase = resolvedBase?.replace(/\/$/, '') || '';
+  const chatEndpoint = `${apiBase}/api/v1/chat`;
 
   const [selectedTool, setSelectedTool] = useState<ToolKey>('emi');
   const [emiInputs, setEmiInputs] = useState({ amount: 500000, rate: 10.5, tenure: 36 });
@@ -449,7 +456,7 @@ export default function HomePage() {
     setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/chat', {
+      const response = await fetch(chatEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -461,8 +468,15 @@ export default function HomePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-        throw new Error(errorData.detail || 'Failed to get response');
+        const rawText = await response.text();
+        let detail = 'Failed to get response';
+        try {
+          const parsed = JSON.parse(rawText);
+          detail = parsed.detail || detail;
+        } catch {
+          if (rawText) detail = rawText;
+        }
+        throw new Error(detail);
       }
 
       const data = await response.json();

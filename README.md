@@ -34,7 +34,7 @@ Equip every young woman with a judgment-free financial mentor so she can build g
 | --- | --- |
 | **Frontend SPA** | React 18, TypeScript, Vite, TailwindCSS, Radix UI, Lucide icons |
 | **Backend (Node)** | Express 5 + Vite middleware for API routes under `/api/*` |
-| **AI / Knowledge** | Optional FastAPI service, ChromaDB vector store, Sentence Transformers, Ollama with DeepSeek/LLaMA/Mistral models |
+| **AI / Knowledge** | Optional FastAPI service, ChromaDB vector store, Sentence Transformers, Ollama with Qwen 2.5 (default: `qwen2.5:1.5b-instruct`) |
 | **Tooling** | pnpm, Vitest, Zod, TanStack Query, clsx + tailwind-merge |
 
 > **Bold stance:** Everything runs on open-source intelligence. There are **zero external API keys**—models are pulled via [Ollama](https://ollama.ai/) and executed locally so users retain total control over their data.
@@ -47,7 +47,7 @@ Equip every young woman with a judgment-free financial mentor so she can build g
 2. **Python RAG Layer (backend/)**
    - `ingest_data.py` embeds the dataset with Sentence Transformers and stores it in ChromaDB.
    - `app/services/rag_service.py` retrieves relevant passages.
-   - `ollama_service.py` streams replies from locally hosted DeepSeek/LLaMA models.
+   - `ollama_service.py` streams replies from a locally hosted Qwen model (default: `qwen2.5:1.5b-instruct`).
 3. **Express API (server/)** proxies lightweight endpoints (health, calculators, chat pass-through). During `pnpm dev`, it shares the same origin as Vite.
 4. **React Frontend (client/)**
    - **Dashboards** show calculators (EMI, savings runway, tax estimator) and progress trackers.
@@ -105,12 +105,12 @@ python ingest_data.py             # create/update vector store
 uvicorn app.main:app --reload --port 8000
 ```
 
-Configure the frontend to call `http://localhost:8000/api/v1/chat` (default).
+Configure the frontend to call `http://localhost:8000/api/v1/chat` (default). Set `VITE_API_BASE_URL=http://localhost:8000` in `client/.env` for local dev.
 
 ### 6. Pull an Open-Source Model with Ollama
 
 ```bash
-ollama pull deepseek-r1:1.5b    # or llama3:8b / mistral:7b
+ollama pull qwen2.5:1.5b-instruct   # default multilingual lightweight model
 ollama serve                    # keep running in a terminal
 ```
 
